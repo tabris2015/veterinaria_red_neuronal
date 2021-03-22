@@ -1,0 +1,104 @@
+{% extends "ProyectoWebApp/base.html" %}
+
+{% load static %}
+
+{% block content %}
+<!-- Message -->
+<section class="page-section cta">
+  <div class="container">
+    <div class="row">
+      <div class="col-m-9 mx-auto">
+        <div class="cta-inner text-center rounded">
+          <h2 class="section-heading mb-4">
+            <span class="section-heading-upper" id="animal">-</span>
+            <span class="section-heading-lower" id="raza">-</span>
+          </h2>
+          <video autoplay="true" id="videoElement"></video>
+        <!-- <h2>Animal:</h2> -->
+        <!-- <h3 id="animal">-</h3> -->
+        <!-- <h2>Raza:</h2> -->
+        <!-- <h3 id="raza">-</h3> -->
+        <h4 id="detection_id">-</h4>
+        </div>
+      </div>
+      <div class="col-m-9 mx-auto">
+        <button id="send_button" type="button" class="btn btn-primary" onclick="sendImage()">Detect</button>
+        <div>
+          <input type="radio" id="bueno" name="gender" value="bueno">
+          <label for="bueno">Bueno</label><br>
+          <input type="radio" id="malo" name="gender" value="malo">
+          <label for="malo">Malo</label>
+          <br>
+          <button id="evaluate_button" type="button" class="btn btn-secondary" onclick="sendFeedback()">Evaluar</button>
+          <div id="seleccion"></div>
+        </div>
+        
+        <canvas id="c" style="display:none;" width="300" height="300"></canvas>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+
+  var video = document.querySelector("#videoElement");
+
+  if (navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(function (stream) {
+        video.srcObject = stream;
+      })
+      .catch(function (err0r) {
+        console.log("Something went wrong!");
+      });
+  }
+
+  function sendImage() {
+    var canvas = document.getElementById("c");
+    var video = document.getElementById("videoElement");
+    // capturar cuadrado
+    canvas.getContext("2d").drawImage(video, 0, 0, video.videoHeight, video.videoHeight, 0, 0, 300, 300);
+    var img = canvas.toDataURL("image/png");
+    console.log('enviando imagen!');
+    let data = { image: img };
+
+    fetch("/detection/image/", {
+      method: "POST",
+      body: JSON.stringify(data)
+    })
+      .then(res => res.json())
+      .then(json => {
+        console.log('prediccion:', json);
+        document.getElementById("animal").innerHTML = json["animal"];
+        document.getElementById("raza").innerHTML = json["raza"]["main"];
+        document.getElementById("detection_id").innerHTML = json["id"];
+      })
+
+    //var dataURL = document.getElementById('videoElement').toDataURL("image/png");
+    //document.getElementById('id_hidden_image_field').value = dataURL;
+  }
+
+  function sendFeedback() {
+    // get id of detection
+    let detection_id = parseInt(document.getElementById("detection_id").innerHTML);
+    let bueno_value = document.getElementById("bueno").checked;
+    let malo_value = document.getElementById("malo").checked;
+    console.log(bueno_value);
+    console.log(malo_value);
+
+    let rating = 2;
+
+    let feedback = {
+      id: detection_id,
+      rating: bueno_value | 0
+    };
+    console.log(feedback);
+    fetch("/detection/feedback/", {
+      method: "POST",
+      body: JSON.stringify(feedback)
+    }).then(res => res.json())
+      .then(json => console.log(json));
+  }
+</script>
+{% endblock %}

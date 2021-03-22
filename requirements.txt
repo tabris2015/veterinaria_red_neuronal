@@ -1,0 +1,10 @@
+django
+django-extensions
+jupyter
+matplotlib
+numpy
+pandas
+Pillow
+scipy
+tensorflow-cpu==2.3.0
+tensorflow-datasets

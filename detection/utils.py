@@ -8,7 +8,7 @@ from PIL import Image
 from django.core.files.base import ContentFile
 # build model
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.applications import EfficientNetB0
 from tensorflow.keras.layers.experimental import preprocessing
@@ -31,9 +31,9 @@ def predict_image(file, model, ds_info, show_image=True):
             print(f'{format_label(label, ds_info)}: {pred[0,label]}')
     pred_label = format_label(np.argmax(pred), ds_info)
 
-    if show_image:
-        plt.imshow(img.astype("uint8"))
-        plt.title("{}".format(format_label(np.argmax(pred), ds_info)))
+    # if show_image:
+    #     plt.imshow(img.astype("uint8"))
+    #     plt.title("{}".format(format_label(np.argmax(pred), ds_info)))
     return pred_label
 
 img_augmentation = Sequential(
